@@ -1,3 +1,11 @@
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const http = require('http');
+const { Server } = requier('socket.io');
+
 const yargs = require('yargs');
 const { hideBin } = require('yargs/helpers');
 
@@ -8,7 +16,15 @@ const { pushRepo } = require('./controllers/push.js');
 const { pullRepo } = require('./controllers/pull.js');
 const { revertRepo } = require('./controllers/revert.js');
 
+dotenv.config();
+
 yargs(hideBin(process.argv))
+  .command(
+    'start',
+    'starts a new server',
+    {},
+    startServer
+  )
   .command(
     'init', 
     'Initialize a new repository', 
@@ -68,3 +84,53 @@ yargs(hideBin(process.argv))
   )
   .demandCommand(1, 'You need atleast one command')
   .help().argv;
+
+function startServer() {
+  const app = express();
+  const port = process.env.PORT || 3000;
+
+  app.use(bodyParser.json());
+  app.use(express.json());
+
+  const mongoURI = process.env.MONGODB_URI;
+
+  mongoose
+    .connect(mongoURI)
+    .then(() => {console.log('MongoDB connected!')})
+    .catch((err) => {console.error(console.error('Unable to connect!', err))});
+
+  app.use(cors({origin:"*"}));
+
+  app.get('/', (req, res) => {
+    res.send('Welcome');
+  });
+
+  const httpServer = http.createServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+    },
+  });
+
+  io.on('connection', (socket) => {
+    socket.on('joinRoom', (userID) => {
+      user = userID;
+      console.log('=====');
+      console.log(user);
+      console.log('=====');
+
+    });
+  });
+
+  const db = mongoose.connection;
+
+  db.once('open', async () => {
+    console.log('CRUD operations called');
+    //TODO: crud operations
+  });
+
+  httpServer.listen(port, () => {
+    console.log(`Server is running on ${port}`);
+  });
+}
