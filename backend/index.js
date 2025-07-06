@@ -4,7 +4,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const http = require('http');
-const { Server } = requier('socket.io');
+const { Server } = require('socket.io');
+const mainRouter = require('./routes/main.router.js');
 
 const yargs = require('yargs');
 const { hideBin } = require('yargs/helpers');
@@ -101,9 +102,7 @@ function startServer() {
 
   app.use(cors({origin:"*"}));
 
-  app.get('/', (req, res) => {
-    res.send('Welcome');
-  });
+  app.use('/', mainRouter);
 
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {
@@ -119,6 +118,7 @@ function startServer() {
       console.log('=====');
       console.log(user);
       console.log('=====');
+      socket.join(userID);
 
     });
   });
