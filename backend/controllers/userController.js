@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { MongoClient, ReturnDocument } = require("mongodb");
+const { MongoClient, returnDocument } = require("mongodb");
 const dotenv = require("dotenv");
 
 var ObjectId = require('mongodb').ObjectId;
